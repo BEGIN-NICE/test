@@ -18,6 +18,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String UPDATEURL = "http://update.app.2345.com/index.php";
     private InformationData mInformationData;
     ;
+ //   private DownloadUtils appUpdataManger;
     private AppUpdataManger appUpdataManger;
     private LinearLayout mVersionTest;
     private TextView mShowVersionName;
@@ -162,6 +164,10 @@ public class MainActivity extends AppCompatActivity {
                         installDialog.show();
 
                     } else {
+
+//                                appUpdataManger = new DownloadUtils(MainActivity.this);
+//                        appUpdataManger.downloadAPK(mInformationData.getDownurl(), mInformationData.getFilename());
+
                         appUpdataManger = new AppUpdataManger(MainActivity.this);
                         appUpdataManger.downloadAPK(mInformationData.getDownurl(), mInformationData.getFilename());
                     }

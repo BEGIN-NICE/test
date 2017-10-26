@@ -18,6 +18,101 @@ import android.widget.Toast;
  * Created by fanxh on 2017/10/20.
  */
 
+//class DownloadUtils {
+//    //下载器
+//    private DownloadManager downloadManager;
+//    //上下文
+//    private Context mContext;
+//    //下载的ID
+//    private long downloadId;
+//    public  DownloadUtils(Context context){
+//        this.mContext = context;
+//    }
+//
+//    //下载apk
+//    public void downloadAPK(String url, String name) {
+//
+//        //创建下载任务
+//        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+//        //移动网络情况下是否允许漫游
+//        request.setAllowedOverRoaming(false);
+//
+//        //在通知栏中显示，默认就是显示的
+//        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+//        request.setTitle("新版本Apk");
+//        request.setDescription("Apk Downloading");
+//        request.setVisibleInDownloadsUi(true);
+//
+//        //设置下载的路径
+//        request.setDestinationInExternalFilesDir(mContext, Environment.DIRECTORY_DOWNLOADS, name);
+// //       request.setDestinationInExternalPublicDir(Environment.getExternalStorageDirectory().getAbsolutePath() , name);
+//
+//        //获取DownloadManager
+//        downloadManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+//        //将下载请求加入下载队列，加入下载队列后会给该任务返回一个long型的id，通过该id可以取消任务，重启任务、获取下载的文件等等
+//        downloadId = downloadManager.enqueue(request);
+//
+//        //注册广播接收者，监听下载状态
+//        mContext.registerReceiver(receiver,
+//                new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+//    }
+//
+//    //广播监听下载的各个状态
+//    private BroadcastReceiver receiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            checkStatus();
+//        }
+//    };
+//
+//
+//    //检查下载状态
+//    private void checkStatus() {
+//        DownloadManager.Query query = new DownloadManager.Query();
+//        //通过下载的id查找
+//        query.setFilterById(downloadId);
+//        Cursor c = downloadManager.query(query);
+//        if (c.moveToFirst()) {
+//            int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
+//            switch (status) {
+//                //下载暂停
+//                case DownloadManager.STATUS_PAUSED:
+//                    break;
+//                //下载延迟
+//                case DownloadManager.STATUS_PENDING:
+//                    break;
+//                //正在下载
+//                case DownloadManager.STATUS_RUNNING:
+//                    break;
+//                //下载完成
+//                case DownloadManager.STATUS_SUCCESSFUL:
+//                    //下载完成安装APK
+//                    installAPK();
+//                    break;
+//                //下载失败
+//                case DownloadManager.STATUS_FAILED:
+//                    Toast.makeText(mContext, "下载失败", Toast.LENGTH_SHORT).show();
+//                    break;
+//            }
+//        }
+//        c.close();
+//    }
+//
+//    //下载到本地后执行安装
+//    private void installAPK() {
+//        //获取下载文件的Uri
+//        Uri downloadFileUri = downloadManager.getUriForDownloadedFile(downloadId);
+//        if (downloadFileUri != null) {
+//            Intent intent= new Intent(Intent.ACTION_VIEW);
+//            intent.setDataAndType(downloadFileUri, "application/vnd.android.package-archive");
+//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            mContext.startActivity(intent);
+//        }
+//    }
+//
+//}
+
+
 public class AppUpdataManger {
     private static DownloadManager downloadManager;
     private Context mContext;
@@ -31,6 +126,7 @@ public class AppUpdataManger {
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
             checkDownloadStatus();
             mContext.unregisterReceiver(receiver);
         }
@@ -38,7 +134,7 @@ public class AppUpdataManger {
 
     public void downloadAPK(String versionUrl, String versionName) {
         this.versionName = versionName;
-        downloadManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+  //      downloadManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(versionUrl));
         request.setAllowedOverRoaming(false);
         MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
@@ -47,7 +143,9 @@ public class AppUpdataManger {
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
         request.setAllowedOverRoaming(false);
         request.setVisibleInDownloadsUi(true);
+ //       request.setDestinationInExternalPublicDir(Environment.getExternalStorageDirectory().getAbsolutePath() , versionName);
         request.setDestinationInExternalFilesDir(mContext, Environment.DIRECTORY_DOWNLOADS, versionName);
+        downloadManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
         mTaskId = downloadManager.enqueue(request);
         mContext.registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
@@ -60,6 +158,7 @@ public class AppUpdataManger {
             int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
             switch (status) {
                 case DownloadManager.STATUS_SUCCESSFUL:
+
                     AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
                     dialog.setTitle("下载完成");
                     dialog.setMessage("是否立即安装");
@@ -89,7 +188,9 @@ public class AppUpdataManger {
 
     public void installAPK(long appId) {
         Intent install = new Intent(Intent.ACTION_VIEW);
-         Uri downloadFileUri = downloadManager.getUriForDownloadedFile(appId);
+//        install.addCategory("android.intent.category.DEFAULT");
+        Uri downloadFileUri = downloadManager.getUriForDownloadedFile(appId);
+        Log.d("*****","downloadFileUri----"+downloadFileUri);
         install.setDataAndType(downloadFileUri, "application/vnd.android.package-archive");
         install.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(install);
