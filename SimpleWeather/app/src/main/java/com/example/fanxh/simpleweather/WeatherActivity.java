@@ -23,6 +23,8 @@ import com.example.fanxh.simpleweather.gson.Weather;
 import com.example.fanxh.simpleweather.util.HttpUtil;
 import com.example.fanxh.simpleweather.util.Utility;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -39,6 +41,11 @@ public class WeatherActivity extends AppCompatActivity {
 
 //    private ScrollView mWeatherLayout;
     private TextView mTitleCity;
+
+    private TextView mTitleNowCond;
+    private TextView mTitleNowDegree;
+
+
     private TextView mTitleUpdateTime;
     private TextView mNowDegreeTem;
     private TextView mNowCondTxt;
@@ -67,21 +74,18 @@ public class WeatherActivity extends AppCompatActivity {
 
 
 //        mWeatherLayout = (ScrollView) findViewById(R.id.weather_layout);
+        mTitleNowCond = (TextView)findViewById(R.id.title_now_cond);
+        mTitleNowDegree = (TextView)findViewById(R.id.title_now_degree);
+
         mNowWeather = (ImageView) findViewById(R.id.now_weather);
-
-
         mTitleCity = (TextView)findViewById(R.id.title_city);
-        mTitleUpdateTime = (TextView)findViewById(R.id.title_update_time);
+ //       mTitleUpdateTime = (TextView)findViewById(R.id.title_update_time);
         mNowDegreeTem = (TextView)findViewById(R.id.now_degree_tmp);
         mNowCondTxt = (TextView)findViewById(R.id.now_cond_txt);
         mAqiCityAqi = (TextView)findViewById(R.id.aqi_city_aqi);
         mAqiCitypm25 = (TextView)findViewById(R.id.aqi_city_pm25);
 
         mDailyForecast = (LinearLayout) findViewById(R.id.daily_forecast_item);
-//        mDailyForecastDate = (TextView) findViewById(R.id.daily_date);
-//        mDailyForecastCond = (TextView) findViewById(R.id.daily_cond_txt_d);
-//        mDailyForecastWind = (TextView) findViewById(R.id.daily_wind_dir);
-//        mDailyForecastTmp = (TextView) findViewById(R.id.daily_tmp_max);
         mSuggestionAirTxt = (TextView) findViewById(R.id.suggestion_air_txt);
         mSuggestionComfTxt = (TextView)findViewById(R.id.suggestion_comf_txt);
         mSuggestionCwTxt = (TextView)findViewById(R.id.suggestion_cw_txt);
@@ -142,7 +146,11 @@ public class WeatherActivity extends AppCompatActivity {
     public void showWeatherInformation(Weather weather){
 
          mTitleCity.setText(weather.basic.city);
-         mTitleUpdateTime.setText(weather.basic.update.loc);
+
+         mTitleNowCond.setText(weather.now.cond.txt);
+         mTitleNowDegree.setText(weather.now.tmp+"°");
+
+ //        mTitleUpdateTime.setText(weather.basic.update.loc);
          mNowDegreeTem.setText(weather.now.tmp+"℃");
          mNowCondTxt.setText(weather.now.cond.txt);
          switch (weather.now.cond.txt){
@@ -151,18 +159,35 @@ public class WeatherActivity extends AppCompatActivity {
                  mNowWeather.setImageResource(R.drawable.i_sun);
                  break;
              case "阴" :
-                 mNowWeather.setImageResource(R.drawable.i_cloud);
+                 mNowWeather.setImageResource(R.drawable.i_overcast);
                  break;
              case "多云" :
-                 mNowWeather.setImageResource(R.drawable.i_cloud_small);
+                 mNowWeather.setImageResource(R.drawable.i_cloudy);
                  break;
              case "小雨":
-                 mNowWeather.setImageResource(R.drawable.i_rain_small);
+                 mNowWeather.setImageResource(R.drawable.i_light_rain);
+                 break;
+             case "中雨":
+                 mNowWeather.setImageResource(R.drawable.i_moderate_rain);
+                 break;
+             case "大雨":
+                 mNowWeather.setImageResource(R.drawable.i_heavy_rain);
+                 break;
+             case "阵雨":
+                 mNowWeather.setImageResource(R.drawable.i_shower_rain);
+                 break;
+             case "雷阵雨":
+                 mNowWeather.setImageResource(R.drawable.i_thundershower);
+                 break;
+             case "小雪":
+                 mNowWeather.setImageResource(R.drawable.i_light_snow);
                  break;
                  default:
          }
+         if (!TextUtils.isEmpty(weather.aqi.city.aqi) && !TextUtils.isEmpty(weather.aqi.city.pm25)){
          mAqiCityAqi.setText("AQI:" + weather.aqi.city.aqi);
          mAqiCitypm25.setText("PM2.5:" + weather.aqi.city.pm25);
+         }
 
          mDailyForecast.removeAllViews();
          for (Daily_forecast mDaily_forecast : weather.daily_forecast){
