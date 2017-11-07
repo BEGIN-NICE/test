@@ -1,5 +1,6 @@
 package com.example.fanxh.simpleweather;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -7,15 +8,12 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -26,17 +24,19 @@ import com.example.fanxh.simpleweather.gson.Weather;
 import com.example.fanxh.simpleweather.util.HttpUtil;
 import com.example.fanxh.simpleweather.util.Utility;
 
-import org.litepal.crud.DataSupport;
-
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class WeatherActivity extends AppCompatActivity {
+/**
+ * Created by fanxh on 2017/11/7.
+ */
+
+
+public class ShowWeatherFragment extends Fragment {
+
     private TextView mTitleCity;
     private TextView mTitleNowCond;
     private TextView mTitleNowDegree;
@@ -60,89 +60,58 @@ public class WeatherActivity extends AppCompatActivity {
     private ImageView mWebLeft;
     private ImageView mChooseAreaRight;
 
-    private ViewPager mShowAllWeather;
-    private List<Fragment> fragmentList;
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_weather);
-        mWebLeft = (ImageView) findViewById(R.id.web_left);
-        mChooseAreaRight = (ImageView) findViewById(R.id.choose_area_right);
-        mWebLeft.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse("http://tools.2345.com/m/rili.htm"));
-                startActivity(intent);
-//                finish();
-            }
-        });
-        mChooseAreaRight.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(WeatherActivity.this, SearchAreaActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-        mTitleCity = (TextView) findViewById(R.id.title_city);
-        mTitleDate = (TextView) findViewById(R.id.title_date);
-        mTitleDegree = (TextView) findViewById(R.id.title_degree);
-        mTitleNowCond = (TextView) findViewById(R.id.title_now_cond);
-        mTitleNowDegree = (TextView) findViewById(R.id.title_now_degree);
-        mHourlyItem = (RecyclerView) findViewById(R.id.hourly_item);
-        mWeatherDescribe = (TextView) findViewById(R.id.weather_describe);
-        mSunriseValue = (TextView) findViewById(R.id.sunris_value);
-        mSunsetValue = (TextView) findViewById(R.id.sunset_value);
-        mRainfallProbabilityValue = (TextView) findViewById(R.id.rainfall_probability_value);
-        mHumidityValue = (TextView) findViewById(R.id.humidity_value);
-        mAirSpeedValue = (TextView) findViewById(R.id.air_speed_value);
-        mSendibleTemperatureValue = (TextView) findViewById(R.id.sendible_temperature_value);
-        mPrecipitationValue = (TextView) findViewById(R.id.precipitation_value);
-        mAirPressureValue = (TextView) findViewById(R.id.air_pressure_value);
-        mVisibilityValue = (TextView) findViewById(R.id.visibility_value);
-        mUltravioletIndexValue = (TextView) findViewById(R.id.ultraviolet_index_value);
-        mAQIValue = (TextView) findViewById(R.id.aqi_value);
-        mAirQualityValue = (TextView) findViewById(R.id.air_quality_value);
-        mDailyForecast = (LinearLayout) findViewById(R.id.daily_forecast_item);
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//        String weatherString = prefs.getString("weather", null);
-//        String weatherIdString = prefs.getString("weatherId", null);
-//        String weatherId = getIntent().getStringExtra("weather_id");
-//        if (TextUtils.isEmpty(weatherId) && weatherString != null) {
-//            Weather weather = Utility.handleWeatherResponse(weatherString);
-//            showWeatherInformation(weather);
-//        } else if (!TextUtils.isEmpty(weatherId) && weatherString != null && weatherId.equals(weatherIdString)) {
-//            Weather weather = Utility.handleWeatherResponse(weatherString);
-//            showWeatherInformation(weather);
-//        } else {
-//            requestWeather(weatherId);
-//        }
-//        mShowAllWeather = (ViewPager)findViewById(R.id.show_all_weather);
-//        fragmentList = new ArrayList<>();
-//        final List<InformationBean> informationBeans = DataSupport.findAll(InformationBean.class);
-//        for (InformationBean informationBean : informationBeans){
-////            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-////            String weatherString = prefs.getString("weather", null);
-////            String weatherIdString = prefs.getString("weatherId", null);
-//            ShowWeatherFragment sWF = new ShowWeatherFragment();
-//            String weatherId = informationBean.getCity();
-////            if (TextUtils.isEmpty(weatherId) && weatherString != null) {
-////                Weather weather = Utility.handleWeatherResponse(weatherString);
-////                showWeatherInformation(weather);
-////            } else if (!TextUtils.isEmpty(weatherId) && weatherString != null && weatherId.equals(weatherIdString)) {
-////                Weather weather = Utility.handleWeatherResponse(weatherString);
-////                showWeatherInformation(weather);
-////            } else {
-//
-//            sWF.onCreateView(getLayoutInflater(), null,  savedInstanceState);
-//            }
-//            fragmentList.add( sWF);
-//        }
-//        mShowAllWeather.setAdapter(new ShowWeatherFragmentAdapter(getSupportFragmentManager(), fragmentList));
-//        mShowAllWeather.setCurrentItem(0);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.show_weather_fragment,container,false);
+
+
+
+
+        mTitleCity = (TextView) view.findViewById(R.id.title_city);
+        mTitleDate = (TextView) view.findViewById(R.id.title_date);
+        mTitleDegree = (TextView) view.findViewById(R.id.title_degree);
+        mTitleNowCond = (TextView) view.findViewById(R.id.title_now_cond);
+        mTitleNowDegree = (TextView) view.findViewById(R.id.title_now_degree);
+        mHourlyItem = (RecyclerView) view.findViewById(R.id.hourly_item);
+        mWeatherDescribe = (TextView) view.findViewById(R.id.weather_describe);
+        mSunriseValue = (TextView) view.findViewById(R.id.sunris_value);
+        mSunsetValue = (TextView) view.findViewById(R.id.sunset_value);
+        mRainfallProbabilityValue = (TextView) view.findViewById(R.id.rainfall_probability_value);
+        mHumidityValue = (TextView) view.findViewById(R.id.humidity_value);
+        mAirSpeedValue = (TextView) view.findViewById(R.id.air_speed_value);
+        mSendibleTemperatureValue = (TextView) view.findViewById(R.id.sendible_temperature_value);
+        mPrecipitationValue = (TextView) view.findViewById(R.id.precipitation_value);
+        mAirPressureValue = (TextView) view.findViewById(R.id.air_pressure_value);
+        mVisibilityValue = (TextView) view.findViewById(R.id.visibility_value);
+        mUltravioletIndexValue = (TextView) view.findViewById(R.id.ultraviolet_index_value);
+        mAQIValue = (TextView) view.findViewById(R.id.aqi_value);
+        mAirQualityValue = (TextView) view.findViewById(R.id.air_quality_value);
+        mDailyForecast = (LinearLayout) view.findViewById(R.id.daily_forecast_item);
+
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        String weatherString = prefs.getString("weather", null);
+        String weatherIdString = prefs.getString("weatherId", null);
+
+
+        String  weatherId = getActivity().getIntent().getStringExtra("weather_id");
+
+
+        if (TextUtils.isEmpty(weatherId) && weatherString != null) {
+            Weather weather = Utility.handleWeatherResponse(weatherString);
+            showWeatherInformation(weather);
+        } else if (!TextUtils.isEmpty(weatherId) && weatherString != null && weatherId.equals(weatherIdString)) {
+            Weather weather = Utility.handleWeatherResponse(weatherString);
+            showWeatherInformation(weather);
+        } else {
+            requestWeather(weatherId);
+        }
+
+        return view;
     }
+
 
     public void requestWeather(final String weatherId) {
         String weatherUrl = "https://free-api.heweather.com/v5/weather?city=" +
@@ -152,18 +121,18 @@ public class WeatherActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
                 final String responseText = response.body().string();
                 final Weather weather = Utility.handleWeatherResponse(responseText);
-                runOnUiThread(new Runnable() {
+                new Thread(new Runnable() {
                     @Override
                     public void run() {
                         if (weather != null && "ok".equals(weather.status)) {
-                            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+                            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
                             editor.clear();
                             editor.putString("weather", responseText);
                             editor.putString("weatherId", weatherId);
                             editor.apply();
                             showWeatherInformation(weather);
                         } else {
-                            Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -172,15 +141,16 @@ public class WeatherActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call call, IOException e) {
-                runOnUiThread(new Runnable() {
+                new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "获取天气信息失败", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
     }
+
 
     public void showWeatherInformation(Weather weather) {
         mTitleCity.setText(weather.basic.city);
@@ -188,7 +158,7 @@ public class WeatherActivity extends AppCompatActivity {
         mTitleNowDegree.setText(weather.now.tmp + "°");
         mTitleDate.setText("星期" + Utility.getWeek(weather.daily_forecast.get(0).date) + "  今天");
         mTitleDegree.setText(weather.daily_forecast.get(0).tmp.max + "  " + weather.daily_forecast.get(0).tmp.min);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         mHourlyItem.setLayoutManager(layoutManager);
         HourlyForecastAdapter mHourlyForecastAdapter = new HourlyForecastAdapter(weather.hourly_forecast);
@@ -196,7 +166,7 @@ public class WeatherActivity extends AppCompatActivity {
         mDailyForecast.removeAllViews();
         for (int i = 0; i < 3; i++) {
             for (DailyForecast mDaily_forecast : weather.daily_forecast) {
-                View view = LayoutInflater.from(this).inflate(R.layout.daily_forecast_item, mDailyForecast, false);
+                View view = LayoutInflater.from(getActivity()).inflate(R.layout.daily_forecast_item, mDailyForecast, false);
                 TextView mDailyDate = (TextView) view.findViewById(R.id.daily_date);
                 ImageView mDailyStatus = (ImageView) view.findViewById(R.id.daily_status);
                 TextView mDailyDegree = (TextView) view.findViewById(R.id.daily_degree);
@@ -267,24 +237,5 @@ public class WeatherActivity extends AppCompatActivity {
         String str = string;
         String detailedTime = str.substring(0, 2);
         return Integer.parseInt(detailedTime);
-    }
-
-    public class ShowWeatherFragmentAdapter extends FragmentPagerAdapter {
-        List<Fragment> list;
-        public ShowWeatherFragmentAdapter(FragmentManager fm, List<Fragment> list) {
-            super(fm);
-            this.list = list;
-        }
-
-
-
-        @Override
-        public int getCount() {
-            return list.size();
-        }
-        @Override
-        public Fragment getItem(int arg0) {
-            return list.get(arg0);
-        }
     }
 }
