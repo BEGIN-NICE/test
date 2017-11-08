@@ -1,9 +1,6 @@
 package com.example.fanxh.simpleweather;
 
-import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -11,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,13 +59,24 @@ public class ShowWeatherFragment extends Fragment {
     private ImageView mChooseAreaRight;
 
 
+    private static HourlyForecastAdapter mHourlyForecastAdapter;
+
+    private  static String weatherId;
+
+
+    public static ShowWeatherFragment newInstance(String weatherId){
+      ShowWeatherFragment sWF = new ShowWeatherFragment();
+      Bundle bundle = new Bundle();
+      bundle.putString("weatherId",weatherId);
+      sWF.setArguments(bundle);
+      return sWF;
+    };
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.show_weather_fragment,container,false);
-
-
-
 
         mTitleCity = (TextView) view.findViewById(R.id.title_city);
         mTitleDate = (TextView) view.findViewById(R.id.title_date);
@@ -91,27 +100,38 @@ public class ShowWeatherFragment extends Fragment {
         mDailyForecast = (LinearLayout) view.findViewById(R.id.daily_forecast_item);
 
 
+
+        return view;
+
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         String weatherString = prefs.getString("weather", null);
         String weatherIdString = prefs.getString("weatherId", null);
 
-
-        String  weatherId = getActivity().getIntent().getStringExtra("weather_id");
-
-
-        if (TextUtils.isEmpty(weatherId) && weatherString != null) {
+        if (weatherString != null && TextUtils.isEmpty(weatherId)){
             Weather weather = Utility.handleWeatherResponse(weatherString);
             showWeatherInformation(weather);
-        } else if (!TextUtils.isEmpty(weatherId) && weatherString != null && weatherId.equals(weatherIdString)) {
-            Weather weather = Utility.handleWeatherResponse(weatherString);
-            showWeatherInformation(weather);
-        } else {
-            requestWeather(weatherId);
+        }else {
+
+            Log.d("***********","second:        "+weatherId);
         }
 
-        return view;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
+        if (args != null) {
+            weatherId = args.getString("weatherId");
+            requestWeather(weatherId);
+            Log.d("************","weatherId:      "+weatherId);
+        }
+    }
 
     public void requestWeather(final String weatherId) {
         String weatherUrl = "https://free-api.heweather.com/v5/weather?city=" +
@@ -121,7 +141,7 @@ public class ShowWeatherFragment extends Fragment {
             public void onResponse(Call call, Response response) throws IOException {
                 final String responseText = response.body().string();
                 final Weather weather = Utility.handleWeatherResponse(responseText);
-                new Thread(new Runnable() {
+                getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if (weather != null && "ok".equals(weather.status)) {
@@ -136,12 +156,11 @@ public class ShowWeatherFragment extends Fragment {
                         }
                     }
                 });
-
             }
 
-            @Override
+    @Override
             public void onFailure(Call call, IOException e) {
-                new Thread(new Runnable() {
+                getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(getActivity(), "获取天气信息失败", Toast.LENGTH_SHORT).show();
@@ -161,8 +180,10 @@ public class ShowWeatherFragment extends Fragment {
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         mHourlyItem.setLayoutManager(layoutManager);
-        HourlyForecastAdapter mHourlyForecastAdapter = new HourlyForecastAdapter(weather.hourly_forecast);
+        mHourlyForecastAdapter = new HourlyForecastAdapter(weather.hourly_forecast);
+
         mHourlyItem.setAdapter(mHourlyForecastAdapter);
+
         mDailyForecast.removeAllViews();
         for (int i = 0; i < 3; i++) {
             for (DailyForecast mDaily_forecast : weather.daily_forecast) {
